@@ -1,19 +1,150 @@
-const Database = require("better-sqlite3");
-const path = require("path");
-const db = new Database(path.join(__dirname, "..", "students.db"));
-db.pragma("journal_mode = WAL");
-db.exec(`
-CREATE TABLE IF NOT EXISTS students (
- id INTEGER PRIMARY KEY AUTOINCREMENT,
- student_code TEXT NOT NULL UNIQUE,
- full_name TEXT NOT NULL,
- email TEXT NOT NULL UNIQUE,
- phone TEXT DEFAULT '',
- course TEXT NOT NULL,
- enrollment_date TEXT NOT NULL,
- status TEXT NOT NULL DEFAULT 'Active'
-   CHECK(status IN ('Active','Inactive','Graduated')),
- created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
- updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-)`);
-module.exports = db;
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management System</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <b>SE</b>
+      <div>
+        <strong>Student ERP</strong>
+        <small>MANAGEMENT SYSTEM</small>
+      </div>
+    </div>
+    <p class="navlabel">WORKSPACE</p>
+    <div class="nav active">Student Records</div>
+    <div class="tip">
+      <strong>Student Management</strong>
+      <p>Manage student records, enrollment and academic status.</p>
+    </div>
+    <div class="profile">Administrator</div>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <small>STUDENT MANAGEMENT</small>
+        <h1>Dashboard</h1>
+      </div>
+      <small id="today"></small>
+    </header>
+
+    <section class="welcome">
+      <div>
+        <h2>Welcome, Administrator</h2>
+        <p>Manage and monitor your student records.</p>
+      </div>
+      <button id="add">+ Add Student</button>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><span>Total Students</span><strong id="total">0</strong><small>All records</small></div>
+      <div class="stat"><span>Active Students</span><strong id="active">0</strong><small>Currently active</small></div>
+      <div class="stat"><span>Inactive Students</span><strong id="inactive">0</strong><small>Inactive records</small></div>
+      <div class="stat"><span>Graduated</span><strong id="graduated">0</strong><small>Completed students</small></div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead">
+        <div>
+          <h3>Student Records</h3>
+          <p id="message">Manage all registered students</p>
+        </div>
+        <span id="count">0 records</span>
+      </div>
+
+      <div class="toolbar">
+        <input id="search" placeholder="Search students...">
+        <select id="filter">
+          <option value="">All Status</option>
+          <option>Active</option>
+          <option>Inactive</option>
+          <option>Graduated</option>
+        </select>
+        <button id="refresh">Refresh</button>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>STUDENT</th>
+              <th>STUDENT ID</th>
+              <th>COURSE</th>
+              <th>ENROLLMENT DATE</th>
+              <th>STATUS</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="6">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      <span>Student ERP Management System</span>
+      <span>Powered by SQLite</span>
+    </footer>
+  </main>
+</div>
+
+<div id="backdrop" class="backdrop hidden">
+  <div class="modal">
+    <div class="modalhead">
+      <div>
+        <small>STUDENT INFORMATION</small>
+        <h2 id="modalTitle">Add new student</h2>
+        <p>Enter the student details below.</p>
+      </div>
+      <button id="close" class="close">×</button>
+    </div>
+
+    <form id="form">
+      <div class="fields">
+        <label>Student ID
+          <input name="student_code" required maxlength="30">
+        </label>
+        <label>Full Name
+          <input name="full_name" required maxlength="100">
+        </label>
+        <label>Email
+          <input name="email" type="email" required>
+        </label>
+        <label>Phone
+          <input name="phone" maxlength="25">
+        </label>
+        <label>Course
+          <input name="course" required maxlength="100">
+        </label>
+        <label>Enrollment Date
+          <input name="enrollment_date" type="date" required>
+        </label>
+        <label class="wide">Status
+          <select name="status">
+            <option>Active</option>
+            <option>Inactive</option>
+            <option>Graduated</option>
+          </select>
+        </label>
+      </div>
+      <p id="error" class="error"></p>
+      <div class="buttons">
+        <button type="button" id="cancel" class="cancel">Cancel</button>
+        <button type="submit" id="save">Save Student</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
